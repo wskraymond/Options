@@ -13,7 +13,7 @@
     * i = period i (n-1...0)
     * j = node j at period i (0...i)
     * r = continuously compounded interest rate 
-    * df = e^r  $discount factor for 1 period
+    * df = e^h*r  #discount factor for 1 period
     * k = strike
     * b = barrier
     * brt = barrier type (in/out)
@@ -42,12 +42,12 @@
 
 4. Existence of options at ith period
    >If bt=in and s(i,j)<=b, 
-   >> Then PV(i,j) = 0 # non-existence
+   >> Then PV(i,j) = 0 # terminated
    
    > If bt=out and s(i,j)>=b, 
-   >> Then PV(i,j) = 0 # non-existence
+   >> Then PV(i,j) = 0 # terminated
    
-   > else exists (non-terminated case)
+   > else exists (non-terminated)
 
 6. payoff at n-1th period (European)
    > If opt=call , 
