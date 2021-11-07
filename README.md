@@ -49,7 +49,7 @@
    
    > else exists (non-terminated)
 
-6. payoff at n-1th period (European)
+6. Base case: Payoff at n-1th period (European)
    > If opt=call , 
    >> Then PV(n-1, j) = max{0, s(n-1,j)-k}
    
