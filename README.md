@@ -12,7 +12,7 @@
     * n = #no of periods (e.g days)
     * i = period i (n-1...0)
     * j = node j at period i (0...i)
-    * r = continuously compounded interest rate 
+    * r = continuously compounded interest rate log(1+x)
     * df = e^h*r  #discount factor for 1 period
     * k = strike
     * b = barrier
