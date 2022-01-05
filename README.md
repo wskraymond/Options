@@ -10,10 +10,10 @@
 
     * T = Tenor(Years)
     * n = #no of periods (e.g days)
-    * i = period i (n-1...0)
+    * i = period i (n...0) //0 is 0th(start of day), i is ith(end of day), n is nth(end of day)
     * j = node j at period i (0...i)
     * r = continuously compounded interest rate log(1+x)
-    * df = e^h*r  #discount factor for 1 period
+    * df = e^-h*r  #discount factor for 1 period
     * k = strike
     * b = barrier
     * brt = barrier type (in/out)
@@ -41,17 +41,17 @@
    s(i,j) = s0 * u^j * d^i-j
 
 4. Existence of options at ith period
-   >If bt=in and s(i,j)<=b, 
-   >> Then PV(i,j) = 0 # terminated
+   > If inout=knock-out 
+   >> If (move=up and s(i,j)>=H) or (move=down and s(i,j)<=H)  
+   >>> Then PV(i,j) = 0 # terminated
    
-   > If bt=out and s(i,j)>=b, 
-   >> Then PV(i,j) = 0 # terminated
-   
-   > else exists (non-terminated)
+   >If inout=knock-in
+   >> If (move=up and s(i,j)>=H) or (move=down and s(i,j)<=H)
+   >>> Then PV(i,j) = vanilla(i,j) # becomes vanilla options at (i,j)
 
 6. Base case: Payoff at n-1th period (European)
    > If opt=call , 
-   >> Then PV(n-1, j) = max{0, s(n-1,j)-k}
+   >> Then PV(n-1, j) = max{0, s(n-1,j)-K}
    
    > If opt=put , 
-   >> Then PV(n-1, j) = max{0, k - s(n-1,j)}
+   >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
