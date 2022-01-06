@@ -43,7 +43,7 @@ knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
 ```
 
 ## Dynamic Programming
-0. Parameters
+0. Parameters (used in code)
 
     * T = Tenor(Years)
     * n = #no of periods (e.g days)
@@ -53,7 +53,7 @@ knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
     * df = e^-h*r  #discount factor for 1 period
     * k = strike
     * b = barrier
-    * brt = barrier type (in/out)
+    * move = movement (up/down)
     * opt = option type  (call/put)
     * sigma = std of continuously compounded stock return (annualized)
     * h = T/n
