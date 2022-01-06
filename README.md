@@ -21,6 +21,7 @@
 2. N cannot be too large (i.e N=12 is used in test cases)
 
 ## Test Case Sample (Knock-out Call + Knock-in Call = Vanilla Call)
+![Alt text](./options_formula_4.GIF?raw=true "Parity")
 
 ```bash
 ============================= test session starts =============================
