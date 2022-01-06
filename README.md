@@ -92,3 +92,10 @@ knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
    
    > If opt=put , 
    >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
+
+
+image src: 
+https://blog.slcg.com/2013/01/barrier-options.html
+https://en.wikipedia.org/wiki/Binomial_options_pricing_model
+
+
