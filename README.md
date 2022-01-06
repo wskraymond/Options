@@ -5,7 +5,7 @@
 ![Alt text](./options_formula_2.GIF?raw=true "Call Options Price At Day 0")
 ![Alt text](./options_formula_3.GIF?raw=true "Binomial Tree")
 
-#Complexity Analysis
+## Complexity Analysis
 1. Vanilla: Bottom-UP DP + 2D numpy Array
    * Time complexity: N^2
    * Space complexity: N^2
