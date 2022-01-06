@@ -5,7 +5,43 @@
 ![Alt text](./options_formula_2.GIF?raw=true "Call Options Price At Day 0")
 ![Alt text](./options_formula_3.GIF?raw=true "Binomial Tree")
 
-## Dynamic Programming - Bottom Down
+#Complexity Analysis
+1. Vanilla: Bottom-UP DP + 2D numpy Array
+   * Time complexity: N^2
+   * Space complexity: N^2
+2. Knock-out: Bottom-UP DP + 1D numpy Array
+   * Time complexity: N^2
+   * Space complexity: N
+3. Knock-out: Vanilla 2D numpy Array + DFS  
+   * Time complexity: exponential
+   * Space complexity: Vanilla 2D numpy Array
+
+## Limitation
+1. Precision Loss
+2. N cannot be too large (i.e N=12 is used in test cases)
+
+## Test Case Sample (Knock-out Call + Knock-in Call = Vanilla Call)
+
+```bash
+============================= test session starts =============================
+collecting ... collected 1 item
+
+test_options.py::MyTestCase::test_knockin_knockout_parity PASSED         [100%]
+--------------------Input Parameter-----------------------------------------------------------
+risk_free_rate= 0.009950330853168092 vol= 0.26236426446749106 N= 12 spot= 100.0 K= 95.0 T= 1.0 H= 105.0 shares= 100
+--------------------Computation---------------------------------------------------------------
+Vanilla Call PV at t=0:  518.7218479193812
+Up-And-In Call PV at t=0:  423.75315144940305
+Up-And-out Call PV at t=0:  94.96869646997808
+--------------------Equality for Knock-out + Knock-in = Vanilla --------------------------
+knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
+--------------------End ------------------------------------------------------------------
+
+
+============================== 1 passed in 0.13s ==============================
+```
+
+## Dynamic Programming
 0. Parameters
 
     * T = Tenor(Years)
