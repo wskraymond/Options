@@ -12,7 +12,7 @@
 2. Knock-out: Bottom-UP DP + 1D numpy Array
    * Time complexity: N^2
    * Space complexity: N
-3. Knock-out: Vanilla 2D numpy Array + DFS  
+3. Knock-in: Vanilla 2D numpy Array + DFS  
    * Time complexity: exponential
    * Space complexity: Vanilla 2D numpy Array
 
