@@ -1,6 +1,6 @@
 # Barrier Options
 
-#### Reference Formula
+#### Binomial Model
 ![Alt text](./options_formula_1.GIF?raw=true "Call Options PV Discounted from last period")
 ![Alt text](./options_formula_2.GIF?raw=true "Call Options Price At Day 0")
 ![Alt text](./options_formula_3.GIF?raw=true "Binomial Tree")
@@ -94,8 +94,8 @@ knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
    >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
 
 
-image src: 
-https://blog.slcg.com/2013/01/barrier-options.html
-https://en.wikipedia.org/wiki/Binomial_options_pricing_model
+7. Reference
+ * https://blog.slcg.com/2013/01/barrier-options.html
+ * https://en.wikipedia.org/wiki/Binomial_options_pricing_model
 
 
