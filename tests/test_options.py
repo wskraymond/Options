@@ -103,12 +103,12 @@ class MyTestCase(unittest.TestCase):
     def test_knockin_knockout_parity(self):
         risk_free_rate = math.log(1 + 0.01)
         vol = math.log(1 + 0.3)
-        N = 12
+        N = 500
         spot = 100.0
         K = 95.0
         T = 1.0
         H = 105.0
-        shares = 100
+        shares = 1
 
         print()
         print("--------------------Input Parameter-----------------------------------------------------------")
@@ -116,6 +116,7 @@ class MyTestCase(unittest.TestCase):
               "shares=", shares)
 
         print("--------------------Computation---------------------------------------------------------------")
+        BS = bs('c', spot, K, T, risk_free_rate, vol)
 
         vanilla = Vanilla("Vanilla Call",
                           r=risk_free_rate,
@@ -158,7 +159,7 @@ class MyTestCase(unittest.TestCase):
         print(knock_out, "PV at t=0: ", knock_out_pv)
 
         print("--------------------Equality for Knock-out + Knock-in = Vanilla --------------------------")
-        print("knock_out_pv+knock_in_pv = ", knock_out_pv + knock_in_pv, ", vanilla_pv = ", vanilla_pv)
+        print("knock_out_pv+knock_in_pv = ", knock_out_pv + knock_in_pv, ", vanilla_pv = ", vanilla_pv, "BS_Model=", BS)
         print("--------------------End ------------------------------------------------------------------")
 
     def test_convergence(self):
@@ -166,24 +167,51 @@ class MyTestCase(unittest.TestCase):
         S0 = 100  # initial stock price
         K = 110  # strike price
         T = 0.5  # time to maturity in years
-        r = 0.06  # annual risk-free rate
-        sigma = 0.3  # Annualised stock price volatility
+        r = np.log(1+0.06)  # annual risk-free rate
+        sigma = np.log(1+0.3)  # Annualised stock price volatility
 
-        CRR, JR, EQP, TRG = [], [], [], []
+        CRR, TRG,TRG2,JR = [], [], [], []
 
         periods = range(10, 500, 10)
         for N in periods:
-            CRR.append(CRR_method(K, T, S0, r, N, sigma, opttype='C'))
-            TRG.append(TRG_method(K, T, S0, r, N, sigma, opttype='C'))
+            trg_model = Vanilla("Call",
+                               r=r,
+                               std=sigma,
+                               tenor=T,
+                               n=N,
+                               strike=K,
+                               opt="call",
+                               model="TRG")
+            TRG.append(trg_model.price(initSpot=S0, noShares=1))
+
+            jr_model = Vanilla("Call",
+                               r=r,
+                               std=sigma,
+                               tenor=T,
+                               n=N,
+                               strike=K,
+                               opt="call",
+                               model="JR")
+            JR.append(jr_model.price(initSpot=S0, noShares=1))
+
+            crr_model = Vanilla("Call",
+                              r=r,
+                              std=sigma,
+                              tenor=T,
+                              n=N,
+                              strike=K,
+                              opt="call",
+                              model="CRR")
+            CRR.append(crr_model.price(initSpot=S0, noShares=1))
 
         BS = [bs('c', S0, K, T, r, sigma) for i in periods]
 
-        plt.plot(periods, CRR, label='Cox_Ross_Rubinstein')
-        # plt.plot(periods, TRG, 'r--', label='Trigeorgis')
+        plt.plot(periods, JR, label='Jarrow_Rudd')
+        plt.plot(periods, CRR, label='Cox, Ross and Rubinstein')
+        plt.plot(periods, TRG, 'r--', label='Trigeorgis')
         plt.plot(periods, BS, 'k', label='Black-Scholes')
         plt.legend(loc='upper right')
         plt.show()
-
 
 if __name__ == '__main__':
     unittest.main()

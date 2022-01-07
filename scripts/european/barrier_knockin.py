@@ -16,25 +16,49 @@ class KnockInOptions(Vanilla):
     def __str__(self):
         return self.name
 
-    def _dfs(self, initSpot, i, j, vanilla):
-        if i>self.n:
+    def _dfs(self, initSpot, i, j, vanilla, memo):
+        if i > self.n:
             return 0
+
+        if memo[i][j] != -1:
+            return memo[i][j]
 
         curr_spot = self.s(initSpot, i, j)
 
         if self._isActivated(curr_spot):
             return vanilla[i][j]
 
-        pv = self._f(self.dfs(initSpot,i+1, j+1, vanilla), self.dfs(initSpot, i+1,j, vanilla))
+        memo[i][j] = self._f(self._dfs(initSpot, i + 1, j + 1, vanilla, memo), self._dfs(initSpot, i + 1, j, vanilla, memo))
 
-        return pv
+        return memo[i][j]
 
+    """
+    1. Vanilla 2D numpy Array + DFS with memo
+      * Time complexity: N^2 
+      * Space complexity: N^2
+    """
     def price(self, initSpot, noShares=100):
+        memo = np.full((self.n + 1, self.n + 1), -1.0, dtype=np.longdouble)
         vanilla = super()._vanilla(initSpot, noShares)
-        return self.dfs(initSpot, 0, 0, vanilla)
+        return self._dfs(initSpot, 0, 0, vanilla, memo)
 
-
-    #Failed to use bottom approach
+    """
+    2. Vanilla 2D numpy Array + Top-Down to de-/activate contract + Bottom-UP to reprice
+      * Time complexity: N^2
+      * Space complexity: Vanilla 2D numpy Array
+    """
+    """
+    Failed to do so , same as vanilla price
+    --------------------Input Parameter-----------------------------------------------------------
+risk_free_rate= 0.009950330853168092 vol= 0.26236426446749106 N= 12 spot= 100.0 K= 95.0 T= 1.0 H= 105.0 shares= 1
+--------------------Computation---------------------------------------------------------------
+Vanilla Call PV at t=0:  13.524782674985937
+Up-And-In Call PV at t=0:  13.524782674985937
+Up-And-out Call PV at t=0:  0.15884558796031875
+--------------------Equality for Knock-out + Knock-in = Vanilla --------------------------
+knock_out_pv+knock_in_pv =  13.683628262946256 , vanilla_pv =  13.524782674985937 BS_Model= 13.370147046851775
+--------------------End ------------------------------------------------------------------
+    """
     # def price(self, initSpot, noShares=100):
     #     pv = super()._vanilla(initSpot, noShares)
     #
@@ -59,3 +83,10 @@ class KnockInOptions(Vanilla):
     #                     pv[i][j] = self._f(pvUp=pv[i + 1][j + 1], pvDown=pv[i + 1][j])
     #
     #     return pv[0][0]
+
+    # TODO: Approach 3
+    """
+    3. Bottom-up DP to calculate (1) activated node(i,j)'s vanilla price Or (2) if not activated, do as usual 
+      * Time complexity: K x N^2
+      * Space complexity: N (reuse the same maximum array)
+    """

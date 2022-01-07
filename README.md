@@ -12,13 +12,29 @@
 2. Knock-out: Bottom-UP DP + 1D numpy Array
    * Time complexity: N^2
    * Space complexity: N
-3. Knock-in: Vanilla 2D numpy Array + DFS  
-   * Time complexity: exponential
-   * Space complexity: Vanilla 2D numpy Array
-
+3. Knock-in: 
+   1. Vanilla 2D numpy Array + DFS with memo
+      * Time complexity: N^2 
+      * Space complexity: N^2
+   2. (TODO) Bottom-up DP to calculate (1) activated node(i,j)'s vanilla price Or (2) if not activated, do as usual 
+      * Time complexity: K x N^2
+      * Space complexity: N
+   
 ## Limitation
-1. Precision Loss
-2. N cannot be too large (i.e N=12 is used in test cases)
+1. N cannot be too large (i.e N=500 is used in test cases)
+
+## Verification
+```bash
+# Initialise parameters
+S0 = 100  # initial stock price
+K = 110  # strike price
+T = 0.5  # time to maturity in years
+r = np.log(1+0.06)  # annual risk-free rate
+sigma = np.log(1+0.3)  # Annualised stock price volatility
+
+periods = range(10, 500, 10) 
+```
+![Alt text](images/test/convergence_to_bs.GIF?raw=true "Comparison")
 
 ## Test Case Sample (Knock-out Call + Knock-in Call = Vanilla Call)
 ![Alt text](images/binomial/options_formula_4.GIF?raw=true "Parity")
@@ -27,19 +43,22 @@
 ============================= test session starts =============================
 collecting ... collected 1 item
 
-test_options.py::MyTestCase::test_knockin_knockout_parity PASSED         [100%]
+test_options.py::MyTestCase::test_knockin_knockout_parity 
+
+============================== 1 passed in 1.77s ==============================
+
+Process finished with exit code 0
+PASSED         [100%]
 --------------------Input Parameter-----------------------------------------------------------
-risk_free_rate= 0.009950330853168092 vol= 0.26236426446749106 N= 12 spot= 100.0 K= 95.0 T= 1.0 H= 105.0 shares= 100
+risk_free_rate= 0.009950330853168092 vol= 0.26236426446749106 N= 500 spot= 100.0 K= 95.0 T= 1.0 H= 105.0 shares= 1
 --------------------Computation---------------------------------------------------------------
-Vanilla Call PV at t=0:  518.7218479193812
-Up-And-In Call PV at t=0:  423.75315144940305
-Up-And-out Call PV at t=0:  94.96869646997808
+Vanilla Call PV at t=0:  13.371077462005541
+Up-And-In Call PV at t=0:  13.318153535622839
+Up-And-out Call PV at t=0:  0.05292392638270593
 --------------------Equality for Knock-out + Knock-in = Vanilla --------------------------
-knock_out_pv+knock_in_pv =  518.7218479193812 , vanilla_pv =  518.7218479193812
+knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.371077462005541 BS_Model= 13.370147046851775
 --------------------End ------------------------------------------------------------------
 
-
-============================== 1 passed in 0.13s ==============================
 ```
 
 ## Dynamic Programming
