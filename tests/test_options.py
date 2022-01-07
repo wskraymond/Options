@@ -1,7 +1,12 @@
 import math
 import unittest
+
+import numpy as np
+
 from scripts.european.barrier_knockout import *
 from scripts.european.barrier_knockin import *
+from py_vollib.black_scholes import black_scholes as bs
+import matplotlib.pyplot as plt
 
 
 class MyTestCase(unittest.TestCase):
@@ -23,15 +28,15 @@ class MyTestCase(unittest.TestCase):
                                   move="up")
         print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot cap at t=n: ", options.s(spot, noUp=N, totalDown=N))
-        print(options,"PV at t=0: ", options.price(initSpot=spot, noShares=shares))
+        print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=shares))
 
         options = Vanilla("Call",
-                                  r=math.log(1 + 0.01),
-                                  std=math.log(1 + 0.3),
-                                  tenor=1.0,
-                                  n=N,
-                                  strike=95.0,
-                                  opt="call")
+                          r=math.log(1 + 0.01),
+                          std=math.log(1 + 0.3),
+                          tenor=1.0,
+                          n=N,
+                          strike=95.0,
+                          opt="call")
         print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot cap at t=n: ", options.s(spot, noUp=N, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=shares))
@@ -85,12 +90,12 @@ class MyTestCase(unittest.TestCase):
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=100))
 
         options = Vanilla("Call",
-                                 r=math.log(1 + 0.01),
-                                 std=math.log(1 + 0.2),
-                                 tenor=1.0,
-                                 n=N,
-                                 strike=100.0,
-                                 opt="put")
+                          r=math.log(1 + 0.01),
+                          std=math.log(1 + 0.2),
+                          tenor=1.0,
+                          n=N,
+                          strike=100.0,
+                          opt="put")
         print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot floor at t=n: ", options.s(spot, noUp=0, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=100))
@@ -103,11 +108,12 @@ class MyTestCase(unittest.TestCase):
         K = 95.0
         T = 1.0
         H = 105.0
-        shares=100
+        shares = 100
 
         print()
         print("--------------------Input Parameter-----------------------------------------------------------")
-        print("risk_free_rate=", risk_free_rate, "vol=", vol, "N=", N, "spot=", spot, "K=", K, "T=", T, "H=", H, "shares=", shares)
+        print("risk_free_rate=", risk_free_rate, "vol=", vol, "N=", N, "spot=", spot, "K=", K, "T=", T, "H=", H,
+              "shares=", shares)
 
         print("--------------------Computation---------------------------------------------------------------")
 
@@ -120,7 +126,7 @@ class MyTestCase(unittest.TestCase):
                           opt="call")
         # print("u=", vanilla.u, "d=", vanilla.d, "p=", vanilla.p, "df=", vanilla.df)
         # print("spot cap at t=n: ", vanilla.s(spot, noUp=N, totalDown=N))
-        vanilla_pv =  vanilla.price(initSpot=spot, noShares=shares)
+        vanilla_pv = vanilla.price(initSpot=spot, noShares=shares)
         print(vanilla, "PV at t=0: ", vanilla_pv)
 
         knock_in = KnockInOptions("Up-And-In Call",
@@ -152,8 +158,32 @@ class MyTestCase(unittest.TestCase):
         print(knock_out, "PV at t=0: ", knock_out_pv)
 
         print("--------------------Equality for Knock-out + Knock-in = Vanilla --------------------------")
-        print("knock_out_pv+knock_in_pv = ", knock_out_pv+knock_in_pv, ", vanilla_pv = ", vanilla_pv)
+        print("knock_out_pv+knock_in_pv = ", knock_out_pv + knock_in_pv, ", vanilla_pv = ", vanilla_pv)
         print("--------------------End ------------------------------------------------------------------")
+
+    def test_convergence(self):
+        # Initialise parameters
+        S0 = 100  # initial stock price
+        K = 110  # strike price
+        T = 0.5  # time to maturity in years
+        r = 0.06  # annual risk-free rate
+        sigma = 0.3  # Annualised stock price volatility
+
+        CRR, JR, EQP, TRG = [], [], [], []
+
+        periods = range(10, 500, 10)
+        for N in periods:
+            CRR.append(CRR_method(K, T, S0, r, N, sigma, opttype='C'))
+            TRG.append(TRG_method(K, T, S0, r, N, sigma, opttype='C'))
+
+        BS = [bs('c', S0, K, T, r, sigma) for i in periods]
+
+        plt.plot(periods, CRR, label='Cox_Ross_Rubinstein')
+        # plt.plot(periods, TRG, 'r--', label='Trigeorgis')
+        plt.plot(periods, BS, 'k', label='Black-Scholes')
+        plt.legend(loc='upper right')
+        plt.show()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,9 +1,9 @@
 # Barrier Options
 
 #### Binomial Model
-![Alt text](./options_formula_1.GIF?raw=true "Call Options PV Discounted from last period")
-![Alt text](./options_formula_2.GIF?raw=true "Call Options Price At Day 0")
-![Alt text](./options_formula_3.GIF?raw=true "Binomial Tree")
+![Alt text](images/binomial/options_formula_1.GIF?raw=true "Call Options PV Discounted from last period")
+![Alt text](images/binomial/options_formula_2.GIF?raw=true "Call Options Price At Day 0")
+![Alt text](images/binomial/options_formula_3.GIF?raw=true "Binomial Tree")
 
 ## Complexity Analysis
 1. Vanilla: Bottom-UP DP + 2D numpy Array
@@ -21,7 +21,7 @@
 2. N cannot be too large (i.e N=12 is used in test cases)
 
 ## Test Case Sample (Knock-out Call + Knock-in Call = Vanilla Call)
-![Alt text](./options_formula_4.GIF?raw=true "Parity")
+![Alt text](images/binomial/options_formula_4.GIF?raw=true "Parity")
 
 ```bash
 ============================= test session starts =============================

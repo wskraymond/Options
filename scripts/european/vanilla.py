@@ -3,6 +3,66 @@ import numpy as np
 from scripts.european.derivatives import *
 
 
+def CRR_method(K, T, S0, r, N, sigma, opttype='C'):
+    # precomute constants
+    dt = T / N
+    u = np.exp(sigma * np.sqrt(dt))
+    d = 1 / u
+    q = (np.exp(r * dt) - d) / (u - d)
+    disc = np.exp(-r * dt)
+
+    # initialise asset prices at maturity - Time step N
+    S = np.zeros(N + 1)
+    S[0] = S0 * d ** N
+    for j in range(1, N + 1):
+        S[j] = S[j - 1] * u / d
+
+    # initialise option values at maturity
+    C = np.zeros(N + 1)
+    for j in range(0, N + 1):
+        if opttype == 'C':
+            C[j] = max(0, S[j] - K)
+        else:
+            C[j] = max(0, K - S[j])
+
+    # step backwards through tree
+    for i in np.arange(N, 0, -1):
+        for j in range(0, i):
+            C[j] = disc * (q * C[j + 1] + (1 - q) * C[j])
+
+    return C[0]
+
+def TRG_method(K, T, S0, r, N, sigma, opttype='C'):
+    # precomute constants
+    dt = T / N
+    nu = r - 0.5 * sigma ** 2
+    dxu = np.sqrt(sigma ** 2 * dt + nu ** 2 * dt ** 2)
+    dxd = -dxu
+    pu = 0.5 + 0.5 * nu * dt / dxu
+    pd = 1 - pu
+    disc = np.exp(-r * dt)
+
+    # initialise asset prices at maturity - Time step N
+    S = np.zeros(N + 1)
+    S[0] = S0 * np.exp(N * dxd)
+    for j in range(1, N + 1):
+        S[j] = S[j - 1] * np.exp(dxu - dxd)
+
+    # initialise option values at maturity
+    C = np.zeros(N + 1)
+    for j in range(0, N + 1):
+        if opttype == 'C':
+            C[j] = max(0, S[j] - K)
+        else:
+            C[j] = max(0, K - S[j])
+
+    # step backwards through tree
+    for i in np.arange(N, 0, -1):
+        for j in range(0, i):
+            C[j] = disc * (pu * C[j + 1] + pd * C[j])
+
+    return C[0]
+
 class Vanilla(Derivatives):
     style = "European"
 
