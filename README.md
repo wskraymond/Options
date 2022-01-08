@@ -113,7 +113,7 @@ knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.37107746200554
    > If opt=put , 
    >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
 
-## Options Greek
+## Vanilla Options Greek
 ![Alt text](images/blacksholes/greek.GIF?raw=true "Greek")
 
 ## Reference
