@@ -153,6 +153,8 @@ class MyTestCase(unittest.TestCase):
 
         print("--------------------Equality for Knock-out + Knock-in = Vanilla --------------------------")
         print("knock_out_pv+knock_in_pv = ", knock_out_pv + knock_in_pv, ", vanilla_pv = ", vanilla_pv, "BS_Model=", BS)
+        self.assertAlmostEqual(knock_out_pv + knock_in_pv, vanilla_pv)
+        self.assertAlmostEqual(bs('c', spot, K, T, risk_free_rate, vol), vanilla_pv, delta=0.01)
         print("--------------------End ------------------------------------------------------------------")
 
     def test_convergence(self):
@@ -199,12 +201,14 @@ class MyTestCase(unittest.TestCase):
 
         BS = [bs('c', S0, K, T, r, sigma) for i in periods]
 
-        plt.plot(periods, JR, label='Jarrow_Rudd')
-        plt.plot(periods, CRR, label='Cox, Ross and Rubinstein')
-        plt.plot(periods, TRG, 'r--', label='Trigeorgis')
-        plt.plot(periods, BS, 'k', label='Black-Scholes')
-        plt.legend(loc='upper right')
-        plt.show()
+
+        #uncomment to show
+        # plt.plot(periods, JR, label='Jarrow_Rudd')
+        # plt.plot(periods, CRR, label='Cox, Ross and Rubinstein')
+        # plt.plot(periods, TRG, 'r--', label='Trigeorgis')
+        # plt.plot(periods, BS, 'k', label='Black-Scholes')
+        # plt.legend(loc='upper right')
+        # plt.show()
 
     def test_bs_call(self):
         S0 = 100  # initial stock price
