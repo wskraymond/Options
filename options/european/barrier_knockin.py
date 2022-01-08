@@ -1,6 +1,4 @@
-import math
-import numpy as np
-from scripts.european.vanilla import *
+from options.european.vanilla import *
 
 
 class KnockInOptions(Vanilla):

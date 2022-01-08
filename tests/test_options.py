@@ -1,11 +1,10 @@
-import math
 import unittest
 
-import numpy as np
-
-from scripts.european.barrier_knockout import *
-from scripts.european.barrier_knockin import *
+import math
+from options.european.barrier_knockout import *
+from options.european.barrier_knockin import *
 from py_vollib.black_scholes import black_scholes as bs
+from py_vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta, rho
 import matplotlib.pyplot as plt
 
 
@@ -26,7 +25,6 @@ class MyTestCase(unittest.TestCase):
                                   opt="call",
                                   barrier=105.0,
                                   move="up")
-        print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot cap at t=n: ", options.s(spot, noUp=N, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=shares))
 
@@ -37,7 +35,6 @@ class MyTestCase(unittest.TestCase):
                           n=N,
                           strike=95.0,
                           opt="call")
-        print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot cap at t=n: ", options.s(spot, noUp=N, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=shares))
 
@@ -53,7 +50,6 @@ class MyTestCase(unittest.TestCase):
                                   opt="put",
                                   barrier=92.0,
                                   move="down")
-        print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot floor at t=n: ", options.s(spot, noUp=0, totalDown=N))
         print("PV at t=0: ", options.price(initSpot=spot, noShares=100))
 
@@ -69,7 +65,6 @@ class MyTestCase(unittest.TestCase):
                                  opt="call",
                                  barrier=92.0,
                                  move="up")
-        print("u=", options.u, "d=", options.d, "p=", options.p, "h=", options.h)
         print("spot cap at t=n: ", options.s(spot, noUp=N, totalDown=N))
         print("PV at t=0: ", options.price(initSpot=spot, noShares=100))
 
@@ -85,7 +80,6 @@ class MyTestCase(unittest.TestCase):
                                  opt="put",
                                  barrier=92.0,
                                  move="down")
-        print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot floor at t=n: ", options.s(spot, noUp=0, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=100))
 
@@ -96,7 +90,6 @@ class MyTestCase(unittest.TestCase):
                           n=N,
                           strike=100.0,
                           opt="put")
-        print("u=", options.u, "d=", options.d, "p=", options.p)
         print("spot floor at t=n: ", options.s(spot, noUp=0, totalDown=N))
         print(options, "PV at t=0: ", options.price(initSpot=spot, noShares=100))
 
@@ -125,7 +118,6 @@ class MyTestCase(unittest.TestCase):
                           n=N,
                           strike=K,
                           opt="call")
-        # print("u=", vanilla.u, "d=", vanilla.d, "p=", vanilla.p, "df=", vanilla.df)
         # print("spot cap at t=n: ", vanilla.s(spot, noUp=N, totalDown=N))
         vanilla_pv = vanilla.price(initSpot=spot, noShares=shares)
         print(vanilla, "PV at t=0: ", vanilla_pv)
@@ -139,7 +131,6 @@ class MyTestCase(unittest.TestCase):
                                   opt="call",
                                   barrier=H,
                                   move="up")
-        # print("u=", knock_in.u, "d=", knock_in.d, "p=", knock_in.p)
         # print("spot cap at t=n: ", knock_in.s(spot, noUp=N, totalDown=N))
         knock_in_pv = knock_in.price(initSpot=spot, noShares=shares)
         print(knock_in, "PV at t=0: ", knock_in_pv)
@@ -153,7 +144,6 @@ class MyTestCase(unittest.TestCase):
                                     opt="call",
                                     barrier=H,
                                     move="up")
-        # print("u=", knock_out.u, "d=", knock_out.d, "p=", knock_out.p)
         # print("spot cap at t=n: ", knock_out.s(spot, noUp=N, totalDown=N))
         knock_out_pv = knock_out.price(initSpot=spot, noShares=shares)
         print(knock_out, "PV at t=0: ", knock_out_pv)
@@ -212,6 +202,71 @@ class MyTestCase(unittest.TestCase):
         plt.plot(periods, BS, 'k', label='Black-Scholes')
         plt.legend(loc='upper right')
         plt.show()
+
+    def test_bs_call(self):
+        S0 = 100  # initial stock price
+        K = 110  # strike price
+        T = 0.5  # time to maturity in years
+        r = np.log(1 + 0.06)  # annual risk-free rate
+        sigma = np.log(1 + 0.3)  # Annualised stock price volatility
+
+        bs_model = Vanilla("Call",
+                            r=r,
+                            std=sigma,
+                            tenor=T,
+                            n=None,
+                            strike=K,
+                            opt="call",
+                            model="BS")
+
+        expected = bs('c', S0, K, T, r, sigma)
+        self.assertAlmostEqual(expected, bs_model.price(S0, 1))
+
+    def test_bs_call(self):
+        S0 = 100  # initial stock price
+        K = 110  # strike price
+        T = 0.5  # time to maturity in years
+        r = np.log(1 + 0.06)  # annual risk-free rate
+        sigma = np.log(1 + 0.3)  # Annualised stock price volatility
+
+        bs_model = Vanilla("Call",
+                            r=r,
+                            std=sigma,
+                            tenor=T,
+                            n=None,
+                            strike=K,
+                            opt="call",
+                            model="BS")
+
+        self.assertAlmostEqual(bs('c', S0, K, T, r, sigma), bs_model.price(S0, 1))
+        self.assertAlmostEqual(delta('c', S0, K, T, r, sigma), bs_model.delta(S0, 1))
+        self.assertAlmostEqual(gamma('c', S0, K, T, r, sigma), bs_model.gamma(S0, 1))
+        self.assertAlmostEqual(vega('c', S0, K, T, r, sigma), bs_model.vega(S0, 1))
+        self.assertAlmostEqual(theta('c', S0, K, T, r, sigma), bs_model.theta(S0, 1))
+        self.assertAlmostEqual(rho('c', S0, K, T, r, sigma), bs_model.rho(S0, 1))
+
+    def test_bs_put(self):
+        S0 = 100  # initial stock price
+        K = 110  # strike price
+        T = 0.5  # time to maturity in years
+        r = np.log(1 + 0.06)  # annual risk-free rate
+        sigma = np.log(1 + 0.3)  # Annualised stock price volatility
+
+        bs_model = Vanilla("Call",
+                            r=r,
+                            std=sigma,
+                            tenor=T,
+                            n=None,
+                            strike=K,
+                            opt="put",
+                            model="BS")
+
+        self.assertAlmostEqual(bs('p', S0, K, T, r, sigma), bs_model.price(S0, 1))
+        self.assertAlmostEqual(delta('p', S0, K, T, r, sigma), bs_model.delta(S0, 1))
+        self.assertAlmostEqual(gamma('p', S0, K, T, r, sigma), bs_model.gamma(S0, 1))
+        self.assertAlmostEqual(vega('p', S0, K, T, r, sigma), bs_model.vega(S0, 1))
+        self.assertAlmostEqual(theta('p', S0, K, T, r, sigma), bs_model.theta(S0, 1))
+        self.assertAlmostEqual(rho('p', S0, K, T, r, sigma), bs_model.rho(S0, 1))
 
 if __name__ == '__main__':
     unittest.main()

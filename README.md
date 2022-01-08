@@ -22,6 +22,7 @@
    
 ## Limitation
 1. N cannot be too large (i.e N=500 is used in test cases)
+2. precison (https://docs.python.org/3/library/decimal.html)
 
 ## Verification
 ```bash
@@ -112,9 +113,12 @@ knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.37107746200554
    > If opt=put , 
    >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
 
+## Options Greek
+![Alt text](images/blacksholes/greek.GIF?raw=true "Greek")
 
-7. Reference
+## Reference
  * https://blog.slcg.com/2013/01/barrier-options.html
  * https://en.wikipedia.org/wiki/Binomial_options_pricing_model
+ * https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model
 
 
