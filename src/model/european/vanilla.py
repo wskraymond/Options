@@ -1,5 +1,5 @@
 import numpy as np
-from options.european.derivatives import *
+from src.model.european.derivatives import *
 from scipy.stats import norm
 
 

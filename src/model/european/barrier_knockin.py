@@ -1,4 +1,5 @@
-from options.european.vanilla import *
+import numpy as np
+from src.model.european.vanilla import Vanilla
 
 
 class KnockInOptions(Vanilla):

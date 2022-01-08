@@ -1,5 +1,5 @@
-from options.european.vanilla import *
-
+import numpy as np
+from src.model.european.vanilla import Vanilla
 
 class KnockoutOptions(Vanilla):
     def __init__(self, name, r, std, tenor, n, strike, opt, barrier, move):

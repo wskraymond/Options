@@ -1,11 +1,14 @@
 import unittest
 
 import math
-from options.european.barrier_knockout import *
-from options.european.barrier_knockin import *
+import numpy as np
 from py_vollib.black_scholes import black_scholes as bs
 from py_vollib.black_scholes.greeks.analytical import delta, gamma, vega, theta, rho
 import matplotlib.pyplot as plt
+
+from src.model.european.barrier_knockin import KnockInOptions
+from src.model.european.barrier_knockout import KnockoutOptions
+from src.model.european.vanilla import Vanilla
 
 
 class MyTestCase(unittest.TestCase):
