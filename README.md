@@ -148,7 +148,7 @@ np.maximum(x1, x2)
    >>> PV[S<=H] = 0 # terminated
 
 
-## Options Greek
+## Vanilla Options Greek
 ![Alt text](images/blacksholes/greek.GIF?raw=true "Greek")
 
 
