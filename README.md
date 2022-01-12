@@ -108,17 +108,54 @@ knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.37107746200554
 
 6. Base case: Payoff at n-1th period (European)
    > If opt=call , 
-   >> Then PV(n-1, j) = max{0, s(n-1,j)-K}
+   >> Then PV(n, j) = max{0, s(n,j)-K}
    
    > If opt=put , 
-   >> Then PV(n-1, j) = max{0, K - s(n-1,j)}
+   >> Then PV(n, j) = max{0, K - s(n,j)}
+
+
+## Array Programming
+Use of Numpy vectorization (the absence of any explicit looping, indexing, etc., 
+in the code - these things are taking place, of course, just “behind the scenes” in optimized, pre-compiled C code)
+
+1. Stock Price at jth node and ith period: 1D Row Vector + scalar
+   S =  s0 * u**np.arrange(0,i+1,1) * d**np.arrange*(i,-1,-1)
+
+2. Recursion Relations for PV: view with slicing + 1D Row Vector + scalar
+   PV[:i+1] = df * (p*PV[1:i+2] + (1-p)*PV[0:i+1] )
+   PV = PV[:-1]
+
+3. Base Case: np.maximum
+(https://numpy.org/doc/stable/reference/generated/numpy.maximum.html)
+
+np.maximum(x1, x2)
+   * Compare two arrays and returns a new array containing the element-wise maxima.
+   * Parameters: x1, x2 (array_like)
+        * The arrays holding the elements to be compared. 
+          * If x1.shape != x2.shape, they must be broadcastable to a common shape (which becomes the shape of the output).
+
+> If opt=call , 
+   >> Then PV = np.maximum(0, S - K)
+   
+   > If opt=put , 
+   >> Then PV = np.maximum(0, K - S)
+
+4. Existence of options at ith period: Boolean Indexing with S > (scaler)
+> If inout=knock-out
+   >> elif move=="up"
+   >>> PV[S>=H] = 0 # terminated
+   >> elif move=="down"
+   >>> PV[S<=H] = 0 # terminated
+
 
 ## Options Greek
 ![Alt text](images/blacksholes/greek.GIF?raw=true "Greek")
+
 
 ## Reference
  * https://blog.slcg.com/2013/01/barrier-options.html
  * https://en.wikipedia.org/wiki/Binomial_options_pricing_model
  * https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model
+ * https://en.wikipedia.org/wiki/Array_programming
 
 
