@@ -149,7 +149,7 @@ in the code - these things are taking place, of course, just “behind the scene
 
 1. Stock Price at jth node and ith period: 1D Row Vector*scalar
 
-   S =  s0 * u**np.arange(0,i+1,1) * d**np.arange(i,-1,-1)
+   S =  s0 * u\*\*np.arange(0,i+1,1) * d**np.arange(i,-1,-1)
 
 2. Recursion Relations for PV: Integer indexing + in-place and augmented assignments
 
