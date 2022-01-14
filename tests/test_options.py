@@ -13,10 +13,10 @@ from src.model.european.vanilla import Vanilla
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        S = np.arange(10)
-        a = True
-        print(a & (S > 4))
-        print(S[(S > 4) & (S < 8)])
+        # S = np.arange(10)
+        # a = True
+        # print(a & (S > 4))
+        # print(S[(S > 4) & (S < 8)])
         self.assertEqual(True, True)  # add assertion here
 
     def test_up_and_out_call(self):
@@ -315,9 +315,9 @@ class MyTestCase(unittest.TestCase):
                                    barrier=H,
                                    move="up",
                                    fast=True)
-            slow.price(initSpot=spot, noShares=shares)
-            fast.price(initSpot=spot, noShares=shares)
-
+            s_pv = slow.price(initSpot=spot, noShares=shares)
+            f_pv = fast.price(initSpot=spot, noShares=shares)
+            self.assertAlmostEqual(s_pv, f_pv)
 
 if __name__ == '__main__':
     unittest.main()
