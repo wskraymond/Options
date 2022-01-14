@@ -185,5 +185,6 @@ in the code - these things are taking place, of course, just “behind the scene
  * https://en.wikipedia.org/wiki/Binomial_options_pricing_model
  * https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model
  * https://en.wikipedia.org/wiki/Array_programming
-
+ * https://docs.python.org/3/library/functools.html#functools.wraps
+ * https://vollib.org/
 
