@@ -152,14 +152,13 @@ in the code - these things are taking place, of course, just “behind the scene
    S =  s0 * u**np.arange(0,i+1,1) * d**np.arange(i,-1,-1)
 
 2. Recursion Relations for PV: Integer indexing + in-place and augmented assignments
-   #update the view (instead of a new copy)
-   PV[:i+1] = df * (p*PV[1:i+2] + (1-p)*PV[0:i+1] )
-   #shrink
-   PV = PV[:-1]
+
+   PV[:i+1] = df * (p*PV[1:i+2] + (1-p)*PV[0:i+1] ) #update the view (instead of a new copy)
+   
+   PV = PV[:-1] #shrink
 
 3. Base Case
 (https://numpy.org/doc/stable/reference/generated/numpy.maximum.html)
-
    * np.maximum(x1, x2)
      * Compare two arrays and returns    a new array containing the element-wise maxima.
      * Parameters: x1, x2 (array_like)
@@ -173,6 +172,7 @@ in the code - these things are taking place, of course, just “behind the scene
    >> Then PV = np.maximum(0, K - S)
 
 4. Existence of options at ith period: Boolean Indexing with S > (scaler) output 1D dimensional result + in-place and augmented assignments
+
    PV[move=="up" & (S>=H)] = 0 # terminated for knock-out call options
 
 
