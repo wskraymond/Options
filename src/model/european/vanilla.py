@@ -1,4 +1,6 @@
 import numpy as np
+
+from src.model.european import logger
 from src.model.european.derivatives import *
 from scipy.stats import norm
 
@@ -6,7 +8,7 @@ from scipy.stats import norm
 class Vanilla(Derivatives):
     style = "European"
 
-    def __init__(self, name, r, std, tenor, n, strike, opt, model="CRR"):
+    def __init__(self, name, r, std, tenor, n, strike, opt, fast=True, model="CRR"):
         self.name = name
         self.tenor = tenor
         self.n = n
@@ -14,6 +16,7 @@ class Vanilla(Derivatives):
         self.std = std
         self.strike = strike
         self.opt = opt
+        self.fast = fast
         self.model = model
         if model == "CRR":
             self._crr()
@@ -100,7 +103,7 @@ class Vanilla(Derivatives):
         self._bs = lambda delta, St, N2, pv_k: delta * St - N2 * pv_k
 
     def __str__(self):
-        return self.name
+        return self.name + ", fast_version = " + str(self.fast) + " , model = " + self.model + " , N = " + str(self.n)
 
     def _vanilla(self, initSpot, noShares=100):
         # pv(i,j)
@@ -134,12 +137,39 @@ class Vanilla(Derivatives):
 
         return pv
 
+    @logger
     def price(self, initSpot, noShares=100):
         if self.model == "BS":
             return self._bs_price(initSpot, noShares)
         else:
-            pv = self._vanilla(initSpot, noShares)
-            return pv[0][0]
+            if self.fast:
+                return self._fast_price(initSpot, noShares)
+            else:
+                pv = self._vanilla(initSpot, noShares)
+                return pv[0][0]
+
+    def _fast_price(self, initSpot, noShares=100):
+        # S: size=N+1
+        S = initSpot * self.u ** np.arange(0, self.n + 1, 1) * self.d ** np.arange(self.n, -1, -1)
+
+        # initialize PV(1D array): size=N+1
+        if self.opt == "call":
+            PV = np.maximum(S - self.strike, 0) * noShares
+        elif self.opt == "put":
+            PV = np.maximum(self.strike - S, 0) * noShares
+        else:
+            raise ValueError("Invalid option type", self.opt)
+
+        # n-1...0
+        for i in reversed(range(self.n)):
+            # no new copy
+            # assign result to the view of PV
+            PV[:i + 1] = self.df * (self.pu * PV[1:i + 2] + self.pd * PV[0:i + 1])
+            # shrink
+            PV = PV[:-1]
+            # PV: new size = i
+
+        return PV[0]
 
     def _bs_price(self, initSpot, noShares=100):
         d1 = self.d1(initSpot, 0)

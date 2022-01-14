@@ -20,9 +20,13 @@
       * Time complexity: K x N^2
       * Space complexity: N
    
-## Limitation
+## Limitation or Trade-off
 1. N cannot be too large (i.e N=500 is used in test cases)
-2. precison (https://docs.python.org/3/library/decimal.html)
+2. losses of precision vs Speed
+   * float vs decimal
+      * https://docs.python.org/3/library/decimal.html
+   * Error Propagation vs iterative algorithm
+      * https://floating-point-gui.de/errors/propagation/
 
 ## Verification
 ```bash
@@ -62,6 +66,31 @@ knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.37107746200554
 
 ```
 
+## Speed Test for Vectorization
+```bash
+============================= test session starts =============================
+collecting ... collected 1 item
+
+test_options.py::MyTestCase::test_knockout_fast_slow_version 
+
+============================= 1 passed in 28.12s ==============================
+
+Process finished with exit code 0
+PASSED      [100%]
+--------------------Input Parameter-----------------------------------------------------------
+risk_free_rate= 0.009950330853168092 vol= 0.26236426446749106 spot= 100.0 K= 95.0 T= 1.0 H= 105.0 shares= 1
+--------------------Logger---------------------------------------------------------------
+'Up-And-out Call, fast_version = False , model = CRR , N = 3', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0000 sec
+'Up-And-out Call, fast_version = True , model = CRR , N = 3', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0000 sec
+'Up-And-out Call, fast_version = False , model = CRR , N = 50', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0000 sec
+'Up-And-out Call, fast_version = True , model = CRR , N = 50', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0040 sec
+'Up-And-out Call, fast_version = False , model = CRR , N = 100', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0080 sec
+'Up-And-out Call, fast_version = True , model = CRR , N = 100', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0040 sec
+'Up-And-out Call, fast_version = False , model = CRR , N = 1000', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 1.0186 sec
+'Up-And-out Call, fast_version = True , model = CRR , N = 1000', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.0559 sec
+'Up-And-out Call, fast_version = False , model = CRR , N = 5000', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 25.1035 sec
+'Up-And-out Call, fast_version = True , model = CRR , N = 5000', func:'price' args:[(), {'initSpot': 100.0, 'noShares': 1}] took: 0.9749 sec
+```
 ## Dynamic Programming
 0. Parameters (used in code)
 
@@ -118,21 +147,24 @@ knock_out_pv+knock_in_pv =  13.371077462005545 , vanilla_pv =  13.37107746200554
 Use of Numpy vectorization (the absence of any explicit looping, indexing, etc., 
 in the code - these things are taking place, of course, just “behind the scenes” in optimized, pre-compiled C code)
 
-1. Stock Price at jth node and ith period: 1D Row Vector + scalar
-   S =  s0 * u**np.arrange(0,i+1,1) * d**np.arrange*(i,-1,-1)
+1. Stock Price at jth node and ith period: 1D Row Vector*scalar
 
-2. Recursion Relations for PV: view with slicing + 1D Row Vector + scalar
+   S =  s0 * u**np.arange(0,i+1,1) * d**np.arange(i,-1,-1)
+
+2. Recursion Relations for PV: Integer indexing + in-place and augmented assignments
+   #update the view (instead of a new copy)
    PV[:i+1] = df * (p*PV[1:i+2] + (1-p)*PV[0:i+1] )
+   #shrink
    PV = PV[:-1]
 
-3. Base Case: np.maximum
+3. Base Case
 (https://numpy.org/doc/stable/reference/generated/numpy.maximum.html)
 
-np.maximum(x1, x2)
-   * Compare two arrays and returns a new array containing the element-wise maxima.
-   * Parameters: x1, x2 (array_like)
-        * The arrays holding the elements to be compared. 
-          * If x1.shape != x2.shape, they must be broadcastable to a common shape (which becomes the shape of the output).
+   * np.maximum(x1, x2)
+     * Compare two arrays and returns    a new array containing the element-wise maxima.
+     * Parameters: x1, x2 (array_like)
+          * The arrays holding the elements to be compared. 
+            * If x1.shape != x2.shape, they must be broadcastable to a common shape (which becomes the shape of the output).
 
 > If opt=call , 
    >> Then PV = np.maximum(0, S - K)
@@ -140,12 +172,8 @@ np.maximum(x1, x2)
    > If opt=put , 
    >> Then PV = np.maximum(0, K - S)
 
-4. Existence of options at ith period: Boolean Indexing with S > (scaler)
-> If inout=knock-out
-   >> elif move=="up"
-   >>> PV[S>=H] = 0 # terminated
-   >> elif move=="down"
-   >>> PV[S<=H] = 0 # terminated
+4. Existence of options at ith period: Boolean Indexing with S > (scaler) output 1D dimensional result + in-place and augmented assignments
+   PV[move=="up" & (S>=H)] = 0 # terminated for knock-out call options
 
 
 ## Vanilla Options Greek

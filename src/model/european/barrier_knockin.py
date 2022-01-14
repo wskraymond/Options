@@ -12,9 +12,6 @@ class KnockInOptions(Vanilla):
         self._isActivated = lambda spot: (self.move == "up" and spot >= self.barrier) \
                                          or (self.move == "down" and spot <= self.barrier)
 
-    def __str__(self):
-        return self.name
-
     def _dfs(self, initSpot, i, j, vanilla, memo):
         if i > self.n:
             return 0

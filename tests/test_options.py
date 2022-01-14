@@ -13,6 +13,10 @@ from src.model.european.vanilla import Vanilla
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
+        S = np.arange(10)
+        a = True
+        print(a & (S > 4))
+        print(S[(S > 4) & (S < 8)])
         self.assertEqual(True, True)  # add assertion here
 
     def test_up_and_out_call(self):
@@ -162,21 +166,21 @@ class MyTestCase(unittest.TestCase):
         S0 = 100  # initial stock price
         K = 110  # strike price
         T = 0.5  # time to maturity in years
-        r = np.log(1+0.06)  # annual risk-free rate
-        sigma = np.log(1+0.3)  # Annualised stock price volatility
+        r = np.log(1 + 0.06)  # annual risk-free rate
+        sigma = np.log(1 + 0.3)  # Annualised stock price volatility
 
-        CRR, TRG,TRG2,JR = [], [], [], []
+        CRR, TRG, TRG2, JR = [], [], [], []
 
         periods = range(10, 500, 10)
         for N in periods:
             trg_model = Vanilla("Call",
-                               r=r,
-                               std=sigma,
-                               tenor=T,
-                               n=N,
-                               strike=K,
-                               opt="call",
-                               model="TRG")
+                                r=r,
+                                std=sigma,
+                                tenor=T,
+                                n=N,
+                                strike=K,
+                                opt="call",
+                                model="TRG")
             TRG.append(trg_model.price(initSpot=S0, noShares=1))
 
             jr_model = Vanilla("Call",
@@ -190,19 +194,18 @@ class MyTestCase(unittest.TestCase):
             JR.append(jr_model.price(initSpot=S0, noShares=1))
 
             crr_model = Vanilla("Call",
-                              r=r,
-                              std=sigma,
-                              tenor=T,
-                              n=N,
-                              strike=K,
-                              opt="call",
-                              model="CRR")
+                                r=r,
+                                std=sigma,
+                                tenor=T,
+                                n=N,
+                                strike=K,
+                                opt="call",
+                                model="CRR")
             CRR.append(crr_model.price(initSpot=S0, noShares=1))
 
         BS = [bs('c', S0, K, T, r, sigma) for i in periods]
 
-
-        #uncomment to show
+        # uncomment to show
         # plt.plot(periods, JR, label='Jarrow_Rudd')
         # plt.plot(periods, CRR, label='Cox, Ross and Rubinstein')
         # plt.plot(periods, TRG, 'r--', label='Trigeorgis')
@@ -218,13 +221,13 @@ class MyTestCase(unittest.TestCase):
         sigma = np.log(1 + 0.3)  # Annualised stock price volatility
 
         bs_model = Vanilla("Call",
-                            r=r,
-                            std=sigma,
-                            tenor=T,
-                            n=None,
-                            strike=K,
-                            opt="call",
-                            model="BS")
+                           r=r,
+                           std=sigma,
+                           tenor=T,
+                           n=None,
+                           strike=K,
+                           opt="call",
+                           model="BS")
 
         expected = bs('c', S0, K, T, r, sigma)
         self.assertAlmostEqual(expected, bs_model.price(S0, 1))
@@ -237,13 +240,13 @@ class MyTestCase(unittest.TestCase):
         sigma = np.log(1 + 0.3)  # Annualised stock price volatility
 
         bs_model = Vanilla("Call",
-                            r=r,
-                            std=sigma,
-                            tenor=T,
-                            n=None,
-                            strike=K,
-                            opt="call",
-                            model="BS")
+                           r=r,
+                           std=sigma,
+                           tenor=T,
+                           n=None,
+                           strike=K,
+                           opt="call",
+                           model="BS")
 
         self.assertAlmostEqual(bs('c', S0, K, T, r, sigma), bs_model.price(S0, 1))
         self.assertAlmostEqual(delta('c', S0, K, T, r, sigma), bs_model.delta(S0, 1))
@@ -260,13 +263,13 @@ class MyTestCase(unittest.TestCase):
         sigma = np.log(1 + 0.3)  # Annualised stock price volatility
 
         bs_model = Vanilla("Call",
-                            r=r,
-                            std=sigma,
-                            tenor=T,
-                            n=None,
-                            strike=K,
-                            opt="put",
-                            model="BS")
+                           r=r,
+                           std=sigma,
+                           tenor=T,
+                           n=None,
+                           strike=K,
+                           opt="put",
+                           model="BS")
 
         self.assertAlmostEqual(bs('p', S0, K, T, r, sigma), bs_model.price(S0, 1))
         self.assertAlmostEqual(delta('p', S0, K, T, r, sigma), bs_model.delta(S0, 1))
@@ -274,6 +277,47 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(vega('p', S0, K, T, r, sigma), bs_model.vega(S0, 1))
         self.assertAlmostEqual(theta('p', S0, K, T, r, sigma), bs_model.theta(S0, 1))
         self.assertAlmostEqual(rho('p', S0, K, T, r, sigma), bs_model.rho(S0, 1))
+
+    def test_knockout_fast_slow_version(self):
+        risk_free_rate = math.log(1 + 0.01)
+        vol = math.log(1 + 0.3)
+        spot = 100.0
+        K = 95.0
+        T = 1.0
+        H = 105.0
+        shares = 1
+
+        print()
+        print("--------------------Input Parameter-----------------------------------------------------------")
+        print("risk_free_rate=", risk_free_rate, "vol=", vol, "spot=", spot, "K=", K, "T=", T, "H=", H,
+              "shares=", shares)
+
+        print("--------------------Logger---------------------------------------------------------------")
+        for N in [3,50, 100, 1000, 5000]:
+            slow = KnockoutOptions("Up-And-out Call",
+                                        r=risk_free_rate,
+                                        std=vol,
+                                        tenor=T,
+                                        n=N,
+                                        strike=K,
+                                        opt="call",
+                                        barrier=H,
+                                        move="up",
+                                        fast=False)
+
+            fast = KnockoutOptions("Up-And-out Call",
+                                   r=risk_free_rate,
+                                   std=vol,
+                                   tenor=T,
+                                   n=N,
+                                   strike=K,
+                                   opt="call",
+                                   barrier=H,
+                                   move="up",
+                                   fast=True)
+            slow.price(initSpot=spot, noShares=shares)
+            fast.price(initSpot=spot, noShares=shares)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,9 +1,12 @@
 import numpy as np
+
+from src.model.european import logger
 from src.model.european.vanilla import Vanilla
 
+
 class KnockoutOptions(Vanilla):
-    def __init__(self, name, r, std, tenor, n, strike, opt, barrier, move):
-        super().__init__(name, r, std, tenor, n, strike, opt)
+    def __init__(self, name, r, std, tenor, n, strike, opt, barrier, move, fast=True):
+        super().__init__(name, r, std, tenor, n, strike, opt, fast)
         self.barrier = barrier
         self.move = move
 
@@ -11,10 +14,43 @@ class KnockoutOptions(Vanilla):
         self._isTerminated = lambda spot: (self.move == "up" and spot >= self.barrier) \
                                           or (self.move == "down" and spot <= self.barrier)
 
-    def __str__(self):
-        return self.name
-
+    @logger
     def price(self, initSpot, noShares=100):
+        if self.fast:
+            return self._fast_price(initSpot, noShares)
+        else:
+            return self._slow_price(initSpot, noShares)
+
+    def _fast_price(self, initSpot, noShares=100):
+        # S: size=N+1
+        S = initSpot * self.u ** np.arange(0, self.n + 1, 1) * self.d ** np.arange(self.n, -1, -1)
+
+        # initialize PV(1D array): size=N+1
+        if self.opt == "call":
+            PV = np.maximum(S - self.strike, 0) * noShares
+        elif self.opt == "put":
+            PV = np.maximum(self.strike - S, 0) * noShares
+        else:
+            raise ValueError("Invalid option type", self.opt)
+
+        PV[((self.move == "up") & (S >= self.barrier))
+           | ((self.move == "down") & (S <= self.barrier))] = 0
+
+        # n-1...0
+        for i in reversed(range(self.n)):
+            # no new copy
+            # assign result to the view of PV
+            PV[:i + 1] = self.df * (self.pu * PV[1:i + 2] + self.pd * PV[0:i + 1])
+            # shrink
+            PV = PV[:-1]
+            # PV: new size = i
+            S = initSpot * self.u ** np.arange(0, i + 1, 1) * self.d ** np.arange(i, -1, -1)
+            PV[((self.move == "up") & (S >= self.barrier))
+               | ((self.move == "down") & (S <= self.barrier))] = 0
+
+        return PV[0]
+
+    def _slow_price(self, initSpot, noShares=100):
         pv = np.zeros(self.n + 1, dtype=np.longdouble)
 
         # base case - check if it's already been terminated
