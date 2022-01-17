@@ -8,10 +8,8 @@ from scipy.stats import norm
 class Vanilla(Derivatives):
     style = "European"
 
-    def __init__(self, name, r, std, tenor, n, strike, opt, fast=True, model="CRR"):
-        self.name = name
-        self.tenor = tenor
-        self.n = n
+    def __init__(self, name, r, std, tenor, n, strike, opt, fast=False, model="CRR"):
+        super().__init__(name=name, tenor=tenor, n=n)
         self.r = r
         self.std = std
         self.strike = strike
@@ -30,7 +28,7 @@ class Vanilla(Derivatives):
             raise ValueError("Invalid Model(CRR or TRG)")
 
     def _crr(self):
-        self.h = self.tenor / self.n
+        # self.h = self.tenor / self.n
         self.df = np.exp(-self.h * self.r)
         self.u = np.exp(np.sqrt(self.h) * self.std)
         self.d = 1.0 / self.u
@@ -46,7 +44,7 @@ class Vanilla(Derivatives):
             initSpot * self.u ** noUp * self.d ** (totalDown - noUp)
 
     def _jr(self):
-        self.h = self.tenor / self.n
+        # self.h = self.tenor / self.n
         self.df = np.exp(-self.h * self.r)
         nu = self.r - 0.5 * self.std ** 2
         self.u = np.exp(nu * self.h + self.std * np.sqrt(self.h))
@@ -63,7 +61,7 @@ class Vanilla(Derivatives):
             initSpot * self.u ** noUp * self.d ** (totalDown - noUp)
 
     def _trg(self):
-        self.h = self.tenor / self.n
+        # self.h = self.tenor / self.n
         self.df = np.exp(-self.h * self.r)
 
         nu = self.r - 0.5 * self.std ** 2
@@ -149,6 +147,9 @@ class Vanilla(Derivatives):
                 return pv[0][0]
 
     def _fast_price(self, initSpot, noShares=100):
+        if self.model != "CRR":
+            raise ValueError("Invalid Model for fast version", self.model)
+
         # S: size=N+1
         S = initSpot * self.u ** np.arange(0, self.n + 1, 1) * self.d ** np.arange(self.n, -1, -1)
 

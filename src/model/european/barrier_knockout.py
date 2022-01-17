@@ -5,14 +5,14 @@ from src.model.european.vanilla import Vanilla
 
 
 class KnockoutOptions(Vanilla):
-    def __init__(self, name, r, std, tenor, n, strike, opt, barrier, move, fast=True):
+    def __init__(self, name, r, std, tenor, n, strike, opt, barrier, move, fast=False):
         super().__init__(name, r, std, tenor, n, strike, opt, fast)
         self.barrier = barrier
         self.move = move
 
         # check if terminated
-        self._isTerminated = lambda spot: (self.move == "up" and spot >= self.barrier) \
-                                          or (self.move == "down" and spot <= self.barrier)
+        self._isTerminated = lambda spot: (self.move == "up" and self.compare_float(spot, self.barrier) >= 0) \
+                                          or (self.move == "down" and self.compare_float(spot, self.barrier) <= 0)
 
     @logger
     def price(self, initSpot, noShares=100):
@@ -22,6 +22,9 @@ class KnockoutOptions(Vanilla):
             return self._slow_price(initSpot, noShares)
 
     def _fast_price(self, initSpot, noShares=100):
+        if self.model != "CRR":
+            raise ValueError("Invalid Model for fast version", self.model)
+
         # S: size=N+1
         S = initSpot * self.u ** np.arange(0, self.n + 1, 1) * self.d ** np.arange(self.n, -1, -1)
 
@@ -33,8 +36,8 @@ class KnockoutOptions(Vanilla):
         else:
             raise ValueError("Invalid option type", self.opt)
 
-        PV[((self.move == "up") & (S >= self.barrier))
-           | ((self.move == "down") & (S <= self.barrier))] = 0
+        PV[((self.move == "up") & self.is_all_float_ge(S, self.barrier))
+           | ((self.move == "down") & self.is_all_float_le(S, self.barrier))] = 0
 
         # n-1...0
         for i in reversed(range(self.n)):
@@ -45,8 +48,8 @@ class KnockoutOptions(Vanilla):
             PV = PV[:-1]
             # PV: new size = i
             S = initSpot * self.u ** np.arange(0, i + 1, 1) * self.d ** np.arange(i, -1, -1)
-            PV[((self.move == "up") & (S >= self.barrier))
-               | ((self.move == "down") & (S <= self.barrier))] = 0
+            PV[((self.move == "up") & self.is_all_float_ge(S, self.barrier))
+               | ((self.move == "down") & self.is_all_float_le(S, self.barrier))] = 0
 
         return PV[0]
 

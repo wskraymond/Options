@@ -1,4 +1,6 @@
 import numpy as np
+
+from src.model.european import logger
 from src.model.european.vanilla import Vanilla
 
 
@@ -9,14 +11,14 @@ class KnockInOptions(Vanilla):
         self.move = move
 
         # check if terminated
-        self._isActivated = lambda spot: (self.move == "up" and spot >= self.barrier) \
-                                         or (self.move == "down" and spot <= self.barrier)
+        self._isActivated = lambda spot: (self.move == "up" and self.compare_float(spot, self.barrier) >= 0) \
+                                         or (self.move == "down" and self.compare_float(spot, self.barrier) <= 0)
 
     def _dfs(self, initSpot, i, j, vanilla, memo):
         if i > self.n:
             return 0
 
-        if memo[i][j] != -1:
+        if self.compare_float(memo[i][j], -1.0) != 0:
             return memo[i][j]
 
         curr_spot = self.s(initSpot, i, j)
@@ -24,7 +26,8 @@ class KnockInOptions(Vanilla):
         if self._isActivated(curr_spot):
             return vanilla[i][j]
 
-        memo[i][j] = self._f(self._dfs(initSpot, i + 1, j + 1, vanilla, memo), self._dfs(initSpot, i + 1, j, vanilla, memo))
+        memo[i][j] = self._f(self._dfs(initSpot, i + 1, j + 1, vanilla, memo),
+                             self._dfs(initSpot, i + 1, j, vanilla, memo))
 
         return memo[i][j]
 
@@ -33,6 +36,8 @@ class KnockInOptions(Vanilla):
       * Time complexity: N^2 
       * Space complexity: N^2
     """
+
+    @logger
     def price(self, initSpot, noShares=100):
         memo = np.full((self.n + 1, self.n + 1), -1.0, dtype=np.longdouble)
         vanilla = super()._vanilla(initSpot, noShares)
@@ -55,7 +60,7 @@ Up-And-out Call PV at t=0:  0.15884558796031875
 knock_out_pv+knock_in_pv =  13.683628262946256 , vanilla_pv =  13.524782674985937 BS_Model= 13.370147046851775
 --------------------End ------------------------------------------------------------------
     """
-    # def price(self, initSpot, noShares=100):
+    # def price2(self, initSpot, noShares=100):
     #     pv = super()._vanilla(initSpot, noShares)
     #
     #     # clean up non-activated point
@@ -75,7 +80,7 @@ knock_out_pv+knock_in_pv =  13.683628262946256 , vanilla_pv =  13.52478267498593
     #         for i in reversed(range(self.n)):
     #             for j in range(i + 1):
     #                 # trick: only recalculate those non-activated node through bottom-up traversal
-    #                 if pv[i][j] == 0:
+    #                 if compareFloat(pv[i][j],0)==0:
     #                     pv[i][j] = self._f(pvUp=pv[i + 1][j + 1], pvDown=pv[i + 1][j])
     #
     #     return pv[0][0]
