@@ -15,7 +15,7 @@ from cassandra.cqlengine import connection
 from datetime import datetime
 from cassandra.cqlengine.management import sync_table
 from cassandra.cqlengine.models import Model
-
+import sys, inspect
 
 class TestCassandraIntegration(unittest.TestCase):
     @pytest.mark.skip(reason="Integration test only")
@@ -95,9 +95,10 @@ class TestCassandraIntegration(unittest.TestCase):
         sync_table(SuperUsers)
 
         SuperUsers.create(name="Joe", addr=MyAddress(street="Easy St.", zipcode=99999), group="hadoop")
-        user = Users.objects(name="Joe")[0]
+        users = Users.objects(name="Joe")
         print()
-        print(user.name, user.addr)
+        for user in users:
+            print(user.name, user.addr)
 
 
 if __name__ == '__main__':
