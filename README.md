@@ -187,4 +187,6 @@ in the code - these things are taking place, of course, just “behind the scene
  * https://en.wikipedia.org/wiki/Array_programming
  * https://docs.python.org/3/library/functools.html#functools.wraps
  * https://vollib.org/
+ * https://pythonspeed.com/articles/vectorization-python-alternatives/
+ * https://towardsdatascience.com/dont-assume-numpy-vectorize-is-faster-dd7e455dba2
 
